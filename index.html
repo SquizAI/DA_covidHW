@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID-19 Global Analysis Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <!-- jVectorMap for world map visualization -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jvectormap/2.0.5/jquery-jvectormap-world-mill.min.js"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner">
+            <i class="fas fa-virus fa-spin"></i>
+            <p>Loading COVID-19 data...</p>
+        </div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-virus"></i> COVID-19 Global Analysis Dashboard</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
+                    <li><a href="#" data-section="metadata">Metadata Guide</a></li>
+                    <li><a href="#" data-section="analysis">Analysis</a></li>
+                    <li><a href="#" data-section="about">About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Interactive Dashboard</h2>
+                    <p>Explore COVID-19 data by continent, location, and date</p>
+                </div>
+                
+                <div class="controls">
+                    <div class="filter-group">
+                        <label for="continent-filter">Continent:</label>
+                        <select id="continent-filter">
+                            <option value="all">All Continents</option>
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="country-filter">Country:</label>
+                        <select id="country-filter">
+                            <option value="all">All Countries</option>
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="date-range">Date Range:</label>
+                        <div class="date-inputs">
+                            <input type="date" id="start-date">
+                            <span>to</span>
+                            <input type="date" id="end-date">
+                        </div>
+                    </div>
+                    
+                    <button id="apply-filters" class="btn">Apply Filters</button>
+                    <button id="reset-filters" class="btn btn-secondary">Reset</button>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="card summary-stats enhanced">
+                        <h3>Global Summary <button id="summary-filter-toggle" class="btn-icon" title="Toggle Filters"><i class="fas fa-filter"></i></button></h3>
+                        
+                        <div id="summary-filters" class="card-filters">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label for="summary-view">View By:</label>
+                                    <select id="summary-view">
+                                        <option value="total">Total Numbers</option>
+                                        <option value="per-million">Per Million</option>
+                                        <option value="per-capita">Per Capita (%)</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="summary-data-type">Data Type:</label>
+                                    <select id="summary-data-type">
+                                        <option value="latest">Latest Available</option>
+                                        <option value="peak">Peak Values</option>
+                                        <option value="average">Period Average</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat">
+                                <span class="stat-value" id="total-cases">-</span>
+                                <span class="stat-label">Total Cases</span>
+                                <span class="stat-change" id="cases-change"><i class="fas fa-arrow-up"></i> <span>-</span></span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="total-deaths">-</span>
+                                <span class="stat-label">Total Deaths</span>
+                                <span class="stat-change" id="deaths-change"><i class="fas fa-arrow-up"></i> <span>-</span></span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="total-vaccinations">-</span>
+                                <span class="stat-label">Total Vaccinations</span>
+                                <span class="stat-change" id="vaccinations-change"><i class="fas fa-arrow-up"></i> <span>-</span></span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="cfr">-</span>
+                                <span class="stat-label">Case Fatality Rate</span>
+                                <span class="stat-trend" id="cfr-trend"><i class="fas fa-minus"></i></span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="tests-conducted">-</span>
+                                <span class="stat-label">Tests Conducted</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="positivity-rate">-</span>
+                                <span class="stat-label">Positivity Rate</span>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-info">
+                            <div class="info-row" id="summary-last-updated">Last Updated: <span>-</span></div>
+                            <div class="info-row" id="summary-selection">Current Selection: <span>Global</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Cases by Continent</h3>
+                        <div class="chart-container">
+                            <canvas id="cases-by-continent"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Global Cases Timeline</h3>
+                        <div class="chart-container">
+                            <canvas id="cases-timeline"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Vaccination Progress</h3>
+                        <div class="chart-container">
+                            <canvas id="vaccination-progress"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card wide">
+                        <h3>Country Comparison</h3>
+                        <div class="chart-container">
+                            <canvas id="country-comparison"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Country Selector</h3>
+                        <div class="selector-container">
+                            <select id="country-select" class="filter-select">
+                                <option value="">Select Country</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div id="country-statistics" class="country-stats-container" style="display: none;">
+                            <h4 id="country-name">Country Statistics</h4>
+                            
+                            <div class="country-stats-grid">
+                                <div class="country-stat">
+                                    <span class="stat-label">Total Cases</span>
+                                    <span id="country-total-cases" class="stat-value">0</span>
+                                </div>
+                                
+                                <div class="country-stat">
+                                    <span class="stat-label">Total Deaths</span>
+                                    <span id="country-total-deaths" class="stat-value">0</span>
+                                </div>
+                                
+                                <div class="country-stat">
+                                    <span class="stat-label">Vaccinations</span>
+                                    <span id="country-total-vaccinations" class="stat-value">0</span>
+                                </div>
+                                
+                                <div class="country-stat">
+                                    <span class="stat-label">Case Fatality Rate</span>
+                                    <span id="country-cfr" class="stat-value">0%</span>
+                                </div>
+                                
+                                <div class="country-stat">
+                                    <span class="stat-label">Vaccination Rate</span>
+                                    <span id="country-vac-rate" class="stat-value">0%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container country-chart">
+                                <canvas id="country-timeline"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card wide">
+                        <h3>Global Map View</h3>
+                        <div class="chart-container map-container">
+                            <div id="map-chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Metadata Guide Section -->
+        <section id="metadata" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Metadata Guide</h2>
+                    <p>Understanding the COVID-19 dataset structure and variables</p>
+                </div>
+                
+                <div class="metadata-content">
+                    <div class="metadata-intro">
+                        <h3>Dataset Overview</h3>
+                        <p>The Our World in Data COVID-19 dataset is a comprehensive collection of global pandemic data, maintained by researchers at the University of Oxford. This dataset integrates data from various official sources including the World Health Organization (WHO), the European Centre for Disease Prevention and Control (ECDC), and individual country health ministries.</p>
+                        <p>The dataset is updated regularly and contains time-series data on confirmed cases, deaths, testing, hospitalizations, vaccinations, and policy responses across countries and territories worldwide.</p>
+                    </div>
+                    
+                    <div class="metadata-categories">
+                        <div class="category">
+                            <h3><i class="fas fa-globe"></i> Geographic Identifiers</h3>
+                            <ul class="variable-list">
+                                <li><strong>iso_code</strong>: Three-letter ISO code for each country/territory</li>
+                                <li><strong>continent</strong>: Continent classification (Asia, Europe, Africa, North America, South America, Oceania)</li>
+                                <li><strong>location</strong>: Country or territory name</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-calendar-alt"></i> Temporal Data</h3>
+                            <ul class="variable-list">
+                                <li><strong>date</strong>: Date of observation in YYYY-MM-DD format</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-virus"></i> Case Metrics</h3>
+                            <ul class="variable-list">
+                                <li><strong>total_cases</strong>: Total confirmed cases of COVID-19</li>
+                                <li><strong>new_cases</strong>: New confirmed cases on this date</li>
+                                <li><strong>new_cases_smoothed</strong>: 7-day smoothed average of new cases</li>
+                                <li><strong>total_cases_per_million</strong>: Total cases per million people</li>
+                                <li><strong>new_cases_per_million</strong>: New cases per million people</li>
+                                <li><strong>new_cases_smoothed_per_million</strong>: 7-day smoothed average of new cases per million</li>
+                                <li><strong>reproduction_rate</strong>: Real-time estimate of the effective reproduction rate (R) of COVID-19</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-heart-broken"></i> Mortality Metrics</h3>
+                            <ul class="variable-list">
+                                <li><strong>total_deaths</strong>: Total deaths attributed to COVID-19</li>
+                                <li><strong>new_deaths</strong>: New deaths attributed to COVID-19 on this date</li>
+                                <li><strong>new_deaths_smoothed</strong>: 7-day smoothed average of new deaths</li>
+                                <li><strong>total_deaths_per_million</strong>: Total deaths per million people</li>
+                                <li><strong>new_deaths_per_million</strong>: New deaths per million people</li>
+                                <li><strong>new_deaths_smoothed_per_million</strong>: 7-day smoothed average of new deaths per million</li>
+                                <li><strong>excess_mortality</strong>: Percentage difference between reported deaths and projected deaths based on previous years</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-procedures"></i> Hospital & ICU Metrics</h3>
+                            <ul class="variable-list">
+                                <li><strong>icu_patients</strong>: Number of COVID-19 patients in intensive care units (ICUs)</li>
+                                <li><strong>icu_patients_per_million</strong>: Number of COVID-19 patients in ICUs per million people</li>
+                                <li><strong>hosp_patients</strong>: Number of COVID-19 patients in hospitals</li>
+                                <li><strong>hosp_patients_per_million</strong>: Number of COVID-19 patients in hospitals per million people</li>
+                                <li><strong>weekly_icu_admissions</strong>: Weekly new ICU admissions due to COVID-19</li>
+                                <li><strong>weekly_icu_admissions_per_million</strong>: Weekly new ICU admissions per million people</li>
+                                <li><strong>weekly_hosp_admissions</strong>: Weekly new hospital admissions due to COVID-19</li>
+                                <li><strong>weekly_hosp_admissions_per_million</strong>: Weekly new hospital admissions per million people</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-vial"></i> Testing Metrics</h3>
+                            <ul class="variable-list">
+                                <li><strong>total_tests</strong>: Total tests for COVID-19</li>
+                                <li><strong>new_tests</strong>: New tests for COVID-19 conducted on this date</li>
+                                <li><strong>total_tests_per_thousand</strong>: Total tests per thousand people</li>
+                                <li><strong>new_tests_per_thousand</strong>: New tests per thousand people</li>
+                                <li><strong>new_tests_smoothed</strong>: 7-day smoothed average of new tests</li>
+                                <li><strong>new_tests_smoothed_per_thousand</strong>: 7-day smoothed average of new tests per thousand people</li>
+                                <li><strong>positive_rate</strong>: Share of COVID-19 tests that are positive (7-day smoothed)</li>
+                                <li><strong>tests_per_case</strong>: Tests conducted per new confirmed case (7-day smoothed)</li>
+                                <li><strong>tests_units</strong>: Units used for testing (e.g., "tests performed", "people tested", etc.)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-syringe"></i> Vaccination Metrics</h3>
+                            <ul class="variable-list">
+                                <li><strong>total_vaccinations</strong>: Total COVID-19 vaccine doses administered</li>
+                                <li><strong>people_vaccinated</strong>: Total people who received at least one vaccine dose</li>
+                                <li><strong>people_fully_vaccinated</strong>: Total people who received all doses prescribed by the initial protocol</li>
+                                <li><strong>new_vaccinations</strong>: New COVID-19 vaccine doses administered on this date</li>
+                                <li><strong>new_vaccinations_smoothed</strong>: 7-day smoothed average of new vaccinations</li>
+                                <li><strong>total_vaccinations_per_hundred</strong>: Total vaccinations per 100 people</li>
+                                <li><strong>people_vaccinated_per_hundred</strong>: People vaccinated per 100 people</li>
+                                <li><strong>people_fully_vaccinated_per_hundred</strong>: People fully vaccinated per 100 people</li>
+                                <li><strong>new_vaccinations_smoothed_per_million</strong>: 7-day smoothed average of new vaccinations per million people</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-shield-virus"></i> Policy Response Metrics</h3>
+                            <ul class="variable-list">
+                                <li><strong>stringency_index</strong>: Government Response Stringency Index (0-100, 100 = strictest response)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="category">
+                            <h3><i class="fas fa-users"></i> Demographic & Health Indicators</h3>
+                            <ul class="variable-list">
+                                <li><strong>population</strong>: Total population</li>
+                                <li><strong>population_density</strong>: Number of people divided by land area (km²)</li>
+                                <li><strong>median_age</strong>: Median age of the population</li>
+                                <li><strong>aged_65_older</strong>: Percentage of the population aged 65 and older</li>
+                                <li><strong>aged_70_older</strong>: Percentage of the population aged 70 and older</li>
+                                <li><strong>gdp_per_capita</strong>: Gross domestic product per capita (PPP, current international $)</li>
+                                <li><strong>extreme_poverty</strong>: Percentage of the population living in extreme poverty</li>
+                                <li><strong>cardiovasc_death_rate</strong>: Death rate from cardiovascular disease (annual, per 100,000 people)</li>
+                                <li><strong>diabetes_prevalence</strong>: Percentage of the population with diabetes</li>
+                                <li><strong>female_smokers</strong>: Percentage of women who smoke</li>
+                                <li><strong>male_smokers</strong>: Percentage of men who smoke</li>
+                                <li><strong>handwashing_facilities</strong>: Percentage of population with basic handwashing facilities</li>
+                                <li><strong>hospital_beds_per_thousand</strong>: Hospital beds per 1,000 people</li>
+                                <li><strong>life_expectancy</strong>: Life expectancy at birth (years)</li>
+                                <li><strong>human_development_index</strong>: Human Development Index (composite measure of health, education, and income)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="metadata-considerations">
+                        <h3>Important Considerations</h3>
+                        <ul>
+                            <li><strong>Missing Data</strong>: Not all metrics are available for all countries and all dates.</li>
+                            <li><strong>Data Quality</strong>: Reporting standards and testing capacity vary significantly between countries.</li>
+                            <li><strong>Reporting Delays</strong>: Countries may update their data with various delays or retroactively correct previous data.</li>
+                            <li><strong>Population Differences</strong>: Per-capita metrics should be used for valid comparisons between locations with different population sizes.</li>
+                            <li><strong>Testing Context</strong>: Case numbers should be interpreted in the context of testing capacity and strategies.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis Section -->
+        <section id="analysis" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Data Analysis</h2>
+                    <p>Key findings and insights from the COVID-19 dataset</p>
+                </div>
+                
+                <div class="analysis-container">
+                    <div class="analysis-section">
+                        <h3>Continental Patterns</h3>
+                        <div class="analysis-content">
+                            <div class="analysis-text">
+                                <p>Our analysis reveals distinct patterns in how COVID-19 spread across different continents:</p>
+                                <ul>
+                                    <li><strong>Wave Timing:</strong> The pandemic progressed in waves that hit different continents at different times, with Asia experiencing the initial outbreak, followed by Europe, North America, and then spreading to other regions.</li>
+                                    <li><strong>Case Severity by Continent:</strong> When adjusted for population, Europe and North America showed higher per-capita case rates compared to Africa and parts of Asia.</li>
+                                    <li><strong>Vaccination Disparities:</strong> Clear continental disparities in vaccination rates emerged, with higher-income regions generally achieving faster and more comprehensive vaccination coverage.</li>
+                                </ul>
+                            </div>
+                            <div class="analysis-visual">
+                                <div class="chart-container">
+                                    <canvas id="continental-waves"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h3>Temporal Evolution</h3>
+                        <div class="analysis-content">
+                            <div class="analysis-visual">
+                                <div class="chart-container">
+                                    <canvas id="temporal-evolution"></canvas>
+                                </div>
+                            </div>
+                            <div class="analysis-text">
+                                <p>The pandemic evolved significantly over time:</p>
+                                <ul>
+                                    <li><strong>Multiple Waves:</strong> Most regions experienced multiple waves of infections, with later waves often showing different characteristics in terms of case severity and mortality.</li>
+                                    <li><strong>Seasonal Patterns:</strong> Some evidence of seasonality emerged, with increased transmission during winter months in temperate regions.</li>
+                                    <li><strong>Declining Mortality Rate:</strong> Over time, the case fatality rate declined in most regions, likely due to improved treatment protocols, vaccination, and changes in the virus itself.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h3>Geographical Insights</h3>
+                        <div class="analysis-content">
+                            <div class="analysis-text">
+                                <p>Location-specific factors played a crucial role in COVID-19 outcomes:</p>
+                                <ul>
+                                    <li><strong>Population Density Impact:</strong> Highly populated urban centers generally experienced more rapid initial spread of the virus.</li>
+                                    <li><strong>Island Nations:</strong> Many island nations (such as New Zealand, Taiwan, and Cuba) demonstrated more effective containment in the early phases due to geographic advantages in border control.</li>
+                                    <li><strong>Regional Clustering:</strong> The data shows regional clustering of similar outcomes, suggesting that geographic proximity and similar policy responses influenced pandemic trajectories.</li>
+                                </ul>
+                            </div>
+                            <div class="analysis-visual">
+                                <div class="chart-container">
+                                    <canvas id="geographical-comparison"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section full-width">
+                        <h3>Policy Impact Assessment</h3>
+                        <div class="analysis-content">
+                            <div class="analysis-visual wide-chart">
+                                <div class="chart-container">
+                                    <canvas id="policy-impact"></canvas>
+                                </div>
+                            </div>
+                            <div class="analysis-text">
+                                <p>Government policies showed varying degrees of effectiveness:</p>
+                                <ul>
+                                    <li><strong>Stringency Correlation:</strong> Higher stringency index values generally correlated with reduced transmission rates, though with diminishing returns beyond certain thresholds.</li>
+                                    <li><strong>Early Intervention:</strong> Countries implementing stringent measures earlier in their epidemic curves typically experienced lower peak case rates.</li>
+                                    <li><strong>Vaccination Effects:</strong> Clear inflection points in case and mortality trends are visible following the introduction of widespread vaccination programs.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h3>Contextual Factors</h3>
+                        <div class="analysis-content">
+                            <div class="analysis-visual">
+                                <div class="chart-container">
+                                    <canvas id="contextual-factors"></canvas>
+                                </div>
+                            </div>
+                            <div class="analysis-text">
+                                <p>Pre-existing conditions influenced pandemic outcomes:</p>
+                                <ul>
+                                    <li><strong>Healthcare Capacity:</strong> Countries with higher hospital beds per thousand people generally managed to maintain lower case fatality rates during peak periods.</li>
+                                    <li><strong>Age Demographics:</strong> Countries with older populations typically experienced higher mortality rates, reflecting the increased vulnerability of elderly populations.</li>
+                                    <li><strong>Development Index:</strong> The Human Development Index showed complex relationships with COVID-19 outcomes, with both advantages (better healthcare) and disadvantages (more international travel) associated with higher development.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>About This Project</h2>
+                    <p>Project information and data sources</p>
+                </div>
+                
+                <div class="about-content">
+                    <div class="about-project">
+                        <h3>Project Background</h3>
+                        <p>This interactive dashboard was developed as part of a data analysis capstone project to provide comprehensive insights into the global COVID-19 pandemic. The analysis focuses on exploring patterns across continents, locations, and over time to better understand the behavior of the virus and the effectiveness of various interventions.</p>
+                        
+                        <h3>Data Source</h3>
+                        <p>The data used in this project comes from Our World in Data (OWID), a collaborative effort between researchers at the University of Oxford and the non-profit organization Global Change Data Lab. OWID compiles COVID-19 data from official sources including the World Health Organization, the European Centre for Disease Prevention and Control, and national health ministries.</p>
+                        <p>The complete dataset is available at: <a href="https://github.com/owid/covid-19-data/tree/master/public/data" target="_blank">https://github.com/owid/covid-19-data/tree/master/public/data</a></p>
+                        
+                        <h3>Methodology</h3>
+                        <p>This analysis employs various data visualization techniques to explore patterns in COVID-19 spread, mortality, testing, and vaccination across different geographical regions and time periods. The visualizations are interactive, allowing users to filter data by continent, country, and date range to identify specific trends and insights.</p>
+                        <p>The analysis considers both absolute numbers and per-capita metrics to provide a balanced view of the pandemic's impact across regions with vastly different population sizes.</p>
+                        
+                        <h3>Contact Information</h3>
+                        <div class="contact-info">
+                            <p><i class="fas fa-envelope"></i> <a href="mailto:matthew.squarzoni001@mymdc.net">matthew.squarzoni001@mymdc.net</a></p>
+                            <p><i class="fab fa-github"></i> <a href="https://github.com/SquizAI/DA_covidHW" target="_blank">https://github.com/SquizAI/DA_covidHW</a></p>
+                        </div>
+                    </div>
+                    
+                    <div class="about-tools">
+                        <h3>Tools & Technologies</h3>
+                        <ul class="tools-list">
+                            <li><i class="fab fa-html5"></i> HTML5</li>
+                            <li><i class="fab fa-css3-alt"></i> CSS3</li>
+                            <li><i class="fab fa-js"></i> JavaScript</li>
+                            <li><i class="fas fa-chart-bar"></i> Chart.js</li>
+                            <li><i class="fas fa-database"></i> D3.js</li>
+                            <li><i class="fas fa-file-csv"></i> PapaParse</li>
+                        </ul>
+                        
+                        <h3>Contact Information</h3>
+                        <p>For questions or further information about this project, please contact:</p>
+                        <p><i class="fas fa-envelope"></i> Email: example@university.edu</p>
+                        <p><i class="fab fa-github"></i> GitHub: github.com/username</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 COVID-19 Analysis Dashboard. Data source: Our World in Data.</p>
+        </div>
+    </footer>
+
+    <script src="js/charts.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/country-comparison.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
