@@ -61,7 +61,7 @@ function loadData() {
     // IMPORTANT: Using actual CSV data from the repository
     // This works on GitHub Pages because it's served from same origin
     
-    fetch('owid-covid-data (1).csv')
+    fetch('data/owid-covid-data.csv')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Network response was not ok: ${response.status}`);
