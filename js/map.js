@@ -1,10 +1,45 @@
 // Map visualization functionality
 
+// Initialize map when document is ready
+$(document).ready(function() {
+    // Ensure jQuery and jVectorMap are properly loaded
+    if (typeof jQuery.fn.vectorMap === 'undefined') {
+        console.error('jVectorMap plugin is not available');
+        return;
+    }
+    
+    // Initialize an empty map on page load to avoid the jvm error
+    initEmptyMap();
+});
+
+// Initialize an empty map
+function initEmptyMap() {
+    const mapChart = document.getElementById('map-chart');
+    if (!mapChart) return;
+    
+    try {
+        $(mapChart).empty();
+        $(mapChart).css('height', '400px');
+        $(mapChart).vectorMap({
+            map: 'world_mill',
+            backgroundColor: 'transparent'
+        });
+    } catch (error) {
+        console.error('Error initializing empty map:', error);
+    }
+}
+
 // Update the Global Map View
 function updateMapView() {
-    // Check if jQuery and jVectorMap are available
-    if (typeof jQuery === 'undefined' || typeof jQuery.fn.vectorMap === 'undefined') {
-        console.error('jQuery or jVectorMap is not available');
+    // Check if jQuery is available
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery is not available');
+        return;
+    }
+    
+    // Check if vectorMap is available on jQuery
+    if (typeof jQuery.fn.vectorMap === 'undefined') {
+        console.error('jVectorMap plugin is not available');
         return;
     }
     // Get the latest data for each country
