@@ -19,8 +19,6 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
 <img src="https://i.imgur.com/NJKL5M7.png" alt="COVID-19 Dashboard Main View" width="800">
 </div>
 
-![COVID-19 Dashboard Preview](images/dashboard_preview.png)
-
 ## ✨ Key Features & Visualizations
 
 <table>
@@ -252,7 +250,7 @@ The dashboard implements a comprehensive data analytics workflow:
    - Cluster analysis to identify countries with similar pandemic progression patterns
    - K-means algorithm implementation for grouping similar geographic entities
 
-### 📈 Statistical Methods Employed
+### 📈 Statistical Analysis Methods
 
 <table>
   <tr>
@@ -360,6 +358,53 @@ The following code snippet demonstrates our implementation of K-means clustering
 
 ```javascript
 // Example from our analysis.js file (simplified)
+### Visualization Strategy
+
+Our visualization approach follows these principles:
+
+1. **Information Hierarchy**: Most critical metrics presented prominently
+2. **Multi-dimensional Analysis**: Combining temporal, geographical, and categorical dimensions
+3. **Interactive Exploration**: Drill-down capabilities from global overview to country details
+4. **Visual Consistency**: Color-coding and iconography that maintains meaning across visualizations
+5. **Responsive Design**: Adapting to different screen sizes while preserving analytical value
+
+## 🧰️ Technical Architecture
+
+<div align="center">
+<img src="https://i.imgur.com/QDCNvMd.png" alt="Technical Architecture Diagram" width="700">
+</div>
+
+### Technology Stack
+
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Visualization Libraries**: Chart.js, Leaflet.js, D3.js
+- **Data Processing**: JavaScript data manipulation with Papa Parse for CSV handling
+- **UI Framework**: Custom CSS with Flexbox layout system
+- **Interactivity**: jQuery and jQuery UI for drag-and-drop capabilities
+- **Persistence**: LocalStorage for saving user preferences and layouts
+
+### Implementation Highlights
+
+- **Modular Code Structure**: Separation of concerns with dedicated modules for data handling, visualization, and UI components
+- **Asynchronous Data Loading**: Non-blocking data fetching with progress indicators
+- **Responsive Design**: Mobile-friendly interface with adaptive visualizations
+- **Performance Optimization**: Efficient data structures and rendering techniques
+- **Cross-Browser Compatibility**: Tested across major browsers and platforms
+
+## 📈 Data Insights & Findings
+
+The dashboard reveals several significant patterns in the global COVID-19 data:
+
+1. **Regional Disparities**: Clear differences in case fatality rates between regions, with some countries showing 5-10x variation despite similar case rates
+2. **Vaccination Impact**: Strong negative correlation between vaccination rates and mortality in later pandemic waves
+3. **Testing Relationship**: Countries with robust testing regimes show earlier case detection and lower overall mortality
+4. **Policy Effectiveness**: Visible impacts of lockdown measures on transmission curves when implemented at appropriate epidemic stages
+5. **Healthcare System Influence**: Significant correlation between pre-pandemic healthcare capacity metrics and pandemic outcomes
+
+### Statistical Models
+
+```javascript
+// Example of clustering algorithm used for country pattern analysis
 function clusterCountriesByPatterns(countryData) {
     // Extract features for clustering
     const features = countryData.map(country => [
