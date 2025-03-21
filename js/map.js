@@ -1,46 +1,93 @@
-// Map visualization functionality
+// Map visualization functionality using Leaflet.js
+
+// Global map object
+let covidMap;
+let mapInitialized = false;
 
 // Initialize map when document is ready
 $(document).ready(function() {
-    // Ensure jQuery and jVectorMap are properly loaded
-    if (typeof jQuery.fn.vectorMap === 'undefined') {
-        console.error('jVectorMap plugin is not available');
-        return;
-    }
-    
-    // Initialize an empty map on page load to avoid the jvm error
-    initEmptyMap();
+    // Wait for DOM to be fully loaded
+    setTimeout(initLeafletMap, 500);
 });
 
-// Initialize an empty map
-function initEmptyMap() {
-    const mapChart = document.getElementById('map-chart');
-    if (!mapChart) return;
+// Initialize the Leaflet map
+function initLeafletMap() {
+    const mapContainer = document.getElementById('map-chart');
+    if (!mapContainer) return;
     
     try {
-        $(mapChart).empty();
-        $(mapChart).css('height', '400px');
-        $(mapChart).vectorMap({
-            map: 'world_mill',
-            backgroundColor: 'transparent'
-        });
+        // Set the map container height
+        mapContainer.style.height = '400px';
+        
+        // Check if Leaflet is available
+        if (typeof L === 'undefined') {
+            console.error('Leaflet is not available');
+            provideFallbackMapView();
+            return;
+        }
+        
+        // Initialize the map centered at [0, 0] with zoom level 2
+        covidMap = L.map('map-chart').setView([20, 0], 2);
+        
+        // Add the base tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(covidMap);
+        
+        mapInitialized = true;
+        console.log('Leaflet map initialized successfully');
     } catch (error) {
-        console.error('Error initializing empty map:', error);
+        console.error('Error initializing Leaflet map:', error);
+        provideFallbackMapView();
     }
+}
+
+// Provide a fallback view when map isn't available
+function provideFallbackMapView() {
+    const mapContainer = document.getElementById('map-chart');
+    if (!mapContainer) return;
+    
+    // Clear any existing content
+    mapContainer.innerHTML = '';
+    mapContainer.style.height = '400px';
+    mapContainer.style.display = 'flex';
+    mapContainer.style.flexDirection = 'column';
+    mapContainer.style.alignItems = 'center';
+    mapContainer.style.justifyContent = 'center';
+    
+    // Create fallback message and content
+    const fallbackMessage = document.createElement('div');
+    fallbackMessage.style.textAlign = 'center';
+    fallbackMessage.style.padding = '20px';
+    
+    fallbackMessage.innerHTML = `
+        <i class="fas fa-map-marked-alt" style="font-size: 2rem; color: #3498db; margin-bottom: 1rem;"></i>
+        <h3>Map Visualization</h3>
+        <p>The interactive map visualization is currently unavailable.</p>
+        <p>Please check the country statistics section for detailed data.</p>
+    `;
+    
+    // Add to container
+    mapContainer.appendChild(fallbackMessage);
+    
+    // Add a link to view data in table format
+    const viewDataButton = document.createElement('button');
+    viewDataButton.className = 'btn';
+    viewDataButton.innerHTML = '<i class="fas fa-table"></i> View Data in Table Format';
+    viewDataButton.addEventListener('click', function() {
+        // This would ideally show the data in a table format
+        alert('Country data is available in the Country Selector section');
+    });
+    
+    mapContainer.appendChild(viewDataButton);
 }
 
 // Update the Global Map View
 function updateMapView() {
-    // Check if jQuery is available
-    if (typeof jQuery === 'undefined') {
-        console.error('jQuery is not available');
-        return;
-    }
-    
-    // Check if vectorMap is available on jQuery
-    if (typeof jQuery.fn.vectorMap === 'undefined') {
-        console.error('jVectorMap plugin is not available');
-        return;
+    // Skip if map functionality is not available
+    if (!mapFunctionalityAvailable) {
+        return; // Fallback view is already shown
     }
     // Get the latest data for each country
     const countryData = {};
