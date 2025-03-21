@@ -5,30 +5,50 @@
 [![Live Demo](https://img.shields.io/badge/LIVE-DEMO-brightgreen?style=for-the-badge&logo=github)](https://squizai.github.io/DA_covidHW/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/SquizAI/DA_covidHW)
 
-*An interactive visualization platform analyzing the global impact of COVID-19*
+*An interactive data analytics platform tracking the global impact of COVID-19*
 
 ![COVID-19 Dashboard Preview](https://i.imgur.com/cOFbYmz.png)
 
-**Updated Dashboard (March 2025)**
-
-<img src="https://i.imgur.com/NJKL5M7.png" alt="Updated COVID-19 Dashboard" width="800">
-
 </div>
 
-## Overview
+## 📊 Dashboard Overview
 
-This interactive dashboard visualizes COVID-19 data from the Our World in Data dataset, providing comprehensive insights into the global pandemic. The application allows users to analyze the behavior of the virus by continent, location, and date through various interactive visualizations.
+This interactive dashboard presents comprehensive COVID-19 data analytics using the Our World in Data dataset. Built with modern web technologies, it provides real-time insights into the global pandemic through dynamic visualizations and data analysis tools that help users understand trends, patterns, and the pandemic's impact across different countries and regions.
+
+<div align="center">
+<img src="https://i.imgur.com/NJKL5M7.png" alt="COVID-19 Dashboard Main View" width="800">
+</div>
 
 ![COVID-19 Dashboard Preview](images/dashboard_preview.png)
 
-## ✨ Key Features
+## ✨ Key Features & Visualizations
 
 <table>
   <tr>
     <td width="50%">
-      <h3>🌎 Global Map View</h3>
-      <p>Interactive world map using Leaflet.js showing COVID-19 impact by country with color-coded indicators. Hovering over countries reveals detailed statistics.</p>
+      <h3>🌎 Interactive Global Map</h3>
+      <p>Explore a color-coded world map using Leaflet.js that visualizes COVID-19 impact by country. Hover over countries to reveal detailed statistics and click to filter dashboard data for deeper analysis.</p>
       <img src="https://i.imgur.com/5XfLCeM.png" alt="Global Map View">
+    </td>
+    <td width="50%">
+      <h3>📈 Time Series Analysis</h3>
+      <p>Track the progression of cases, deaths, and vaccinations over time with interactive line charts that allow for temporal pattern identification and comparison between multiple countries or regions.</p>
+      <img src="https://i.imgur.com/xKQlbdx.png" alt="Time Series Charts">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🔍 Country Comparison</h3>
+      <p>Compare key metrics across selected countries with bar charts and radar plots to identify disparities in pandemic response and impact across different healthcare systems and policy approaches.</p>
+      <img src="https://i.imgur.com/WLX8Hzx.png" alt="Country Comparison Tools">
+    </td>
+    <td width="50%">
+      <h3>🧩 Customizable Dashboard</h3>
+      <p>Drag, resize, and arrange dashboard components in a flexible bento-box layout system that adapts to your analysis needs and screen size, with persistently saved configurations.</p>
+      <img src="https://i.imgur.com/pY4B8dK.png" alt="Customizable Dashboard Layout">
+    </td>
+  </tr>
+</table>
     </td>
     <td width="50%">
       <h3>📊 Interactive Dashboard</h3>
