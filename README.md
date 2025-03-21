@@ -249,7 +249,7 @@ The architecture diagram illustrates how data flows through the application, fro
 ## 📊 Data Analytics Methodology
 
 <div align="center">
-  <img src="https://i.imgur.com/JqUfgEt.png" alt="Data Analytics Process" width="800">
+  <img src="./screenshots/Meta_guide_overview.png" alt="Data Analytics Process" width="800">
 </div>
 
 ### 🔬 Data Processing Pipeline
@@ -474,45 +474,3 @@ This ensures that all insights are derived directly from the official dataset wi
 3. Use the filters to explore different aspects of the COVID-19 data
 4. Navigate between dashboard, metadata, and analysis sections using the navigation menu
 
-## Dashboard Components and Technical Implementation
-
-<table>
-  <tr>
-    <td width="50%">
-      <h3>📊 Global Summary</h3>
-      <p>Key metrics with latest global statistics</p>
-      <img src="https://i.imgur.com/YqCv5mG.png" alt="Global Summary" width="400">
-      <p><strong>Technical Implementation:</strong> Updates dynamically using latest available data points. Metrics are calculated using aggregation functions that process the entire dataset for global totals.</p>
-    </td>
-    <td width="50%">
-      <h3>🗺️ Interactive Map</h3>
-      <p>Geographic visualization with color-coded markers</p>
-      <img src="https://i.imgur.com/J3ZRfv9.png" alt="Interactive Map" width="400">
-      <p><strong>Technical Implementation:</strong> Built with Leaflet.js. Markers sized by case count (logarithmic scale) and colored by case fatality rate. Data updates dynamically based on selected filters.</p>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3>📈 Timeline Analysis</h3>
-      <p>Time-series visualization of new cases</p>
-      <img src="https://i.imgur.com/ULF3rg4.png" alt="Timeline Chart" width="400">
-      <p><strong>Technical Implementation:</strong> Chart.js line graph implementing 7-day moving averages to smooth daily reporting fluctuations. Data points directly correspond to date-specific entries in the dataset.</p>
-    </td>
-    <td>
-      <h3>📊 Comparative Analysis</h3>
-      <p>Cross-country and cross-continent comparisons</p>
-      <img src="https://i.imgur.com/nP8v2pU.png" alt="Comparison Charts" width="400">
-      <p><strong>Technical Implementation:</strong> Horizontal bar charts showing relative metrics. Data is normalized by population when appropriate to enable fair comparison between different sized countries.</p>
-    </td>
-  </tr>
-</table>
-
-## Future Enhancements
-
-- Integration of more advanced ML models (LSTM networks for time-series prediction)
-- Extended regional trend analysis with geospatial clustering
-- Export functionality for charts and processed data
-- Offline data caching and progressive web app capabilities
-- Expanded visualization types (heatmaps, treemaps for hierarchical analysis)
-- Vaccination effectiveness analysis
-- Custom user dashboards and saved views
