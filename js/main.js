@@ -54,45 +54,70 @@ function loadData() {
     // Show loading indicator
     document.getElementById('loading-overlay').classList.remove('hidden');
     
-    // Instead of directly loading the CSV file which can cause CORS issues, 
-    // we'll use a fetch with text response and then parse it with Papa Parse
-    console.log('Loading CSV data...');
+    console.log('Loading COVID data...');
     
-    // IMPORTANT: Using actual CSV data from the repository
-    // This works on GitHub Pages because it's served from same origin
+    // Try multiple paths to find the CSV - more robust across browsers and environments
+    // Safari has stricter path resolution, especially on GitHub Pages
+    const possiblePaths = [
+        'data/owid-covid-data.csv',
+        './data/owid-covid-data.csv',
+        '../data/owid-covid-data.csv',
+        '/data/owid-covid-data.csv',
+        'owid-covid-data.csv',
+        'owid-covid-data (1).csv'
+    ];
     
-    fetch('data/owid-covid-data.csv')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Network response was not ok: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(csvText => {
-            const results = Papa.parse(csvText, {
-                header: true,
-                dynamicTyping: true,
-                skipEmptyLines: true
+    // If all paths fail, use sample data as fallback
+    let loadSuccessful = false;
+    let pathIndex = 0;
+    
+    function tryNextPath() {
+        if (pathIndex >= possiblePaths.length) {
+            console.warn('All data paths failed, using sample data as fallback');
+            useSampleData();
+            document.getElementById('loading-overlay').classList.add('hidden');
+            return;
+        }
+        
+        const path = possiblePaths[pathIndex];
+        console.log(`Trying to load data from: ${path}`);
+        
+        fetch(path)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(csvText => {
+                const results = Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true
+                });
+                
+                console.log('CSV data loaded successfully with ' + results.data.length + ' rows');
+                if (results.data.length > 0) {
+                    loadSuccessful = true;
+                    processData(results.data);
+                    // Update all visualizations
+                    updateDashboard();
+                    // Hide loading indicator
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                } else {
+                    throw new Error('No data rows found in CSV');
+                }
+            })
+            .catch(error => {
+                console.error(`Error loading from ${path}:`, error);
+                // Try next path
+                pathIndex++;
+                tryNextPath();
             });
-            
-            console.log('CSV data loaded successfully with ' + results.data.length + ' rows');
-            if (results.data.length > 0) {
-                processData(results.data);
-                // Update all visualizations
-                updateDashboard();
-            } else {
-                console.error('No data rows found in CSV');
-                alert('Error: No data found in the CSV file.');
-            }
-            // Hide loading indicator
-            document.getElementById('loading-overlay').classList.add('hidden');
-        })
-        .catch(error => {
-            console.error('Error loading data:', error);
-            // Hide loading indicator even on error
-            document.getElementById('loading-overlay').classList.add('hidden');
-            alert('Error loading data. Please try again later.');
-        });
+    }
+    
+    // Start trying paths
+    tryNextPath();
     
 }
 
