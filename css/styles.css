@@ -237,14 +237,68 @@ main {
 
 /* Dashboard Grid with Bento Box Layout */
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-auto-rows: minmax(250px, auto);
+    display: flex;
+    flex-wrap: wrap;
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
-/* Define specific grid areas */
+/* Card Styles */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    flex: 1 0 calc(50% - 1.5rem);
+    min-width: 300px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Specific card sizing */
+.summary-stats {
+    flex: 1 0 calc(33.333% - 1.5rem);
+}
+
+#map-container {
+    flex: 1 0 calc(66.666% - 1.5rem);
+    min-height: 400px;
+}
+
+#country-comparison {
+    flex: 1 0 calc(66.666% - 1.5rem);
+}
+
+/* Simple resize handle that doesn't break layout */
+.card .resize-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    bottom: 5px;
+    right: 5px;
+    cursor: se-resize;
+    opacity: 0;
+    z-index: 10;
+    transition: opacity 0.3s;
+}
+
+.card:hover .resize-handle {
+    opacity: 0.7;
+}
+
+.card .resize-handle:hover {
+    opacity: 1;
+}
+
+.card.resizing {
+    transition: none;
+    box-shadow: var(--shadow-lg);
+    z-index: 20;
+}
+
 .summary-stats {
     grid-column: span 4;
     grid-row: span 1;
@@ -256,6 +310,21 @@ main {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-top: 1rem;
+}
+
+.summary-stats {
+    overflow: visible;
+}
+
+.summary-stats h2 {
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.summary-stats .stat-value {
+    font-size: 1.2rem;
 }
 
 .stat {
@@ -275,10 +344,13 @@ main {
 }
 
 .stat-value {
-    font-size: 1.8rem;
+    font-size: 1.3rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: var(--primary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .stat-label {
@@ -318,7 +390,7 @@ main {
 }
 
 #map-chart {
-    height: 400px !important;
+    height: 500px !important;
     width: 100% !important;
     z-index: 1;
 }
@@ -330,6 +402,9 @@ main {
     border-radius: 4px;
     box-shadow: 0 1px 5px rgba(0,0,0,0.4);
     line-height: 1.5;
+    z-index: 1000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .map-legend h4 {

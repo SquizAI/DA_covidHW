@@ -75,33 +75,52 @@ function initializeDraggableCards() {
         }
     });
 
-    // Add resize handles to cards
+    // Add simple resize handle to cards
     $('.card').each(function() {
         const card = $(this);
-        const resizeHandle = $('<div class="resize-handle"></div>');
-        card.append(resizeHandle);
         
-        resizeHandle.on('mousedown', function(e) {
+        // Remove any existing resize handles
+        card.find('.resize-handle').remove();
+        
+        // Add a single resize handle to the bottom-right corner
+        card.append('<div class="resize-handle"></div>');
+        
+        // Add resize event handling
+        card.find('.resize-handle').on('mousedown', function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
             const startX = e.clientX;
+            const startY = e.clientY;
             const startWidth = card.width();
-            const grid = document.querySelector('.dashboard-grid');
-            const gridRect = grid.getBoundingClientRect();
-            const gridComputedStyle = window.getComputedStyle(grid);
-            const gridColumnGap = parseInt(gridComputedStyle.columnGap, 10);
-            const cellWidth = (gridRect.width - (11 * gridColumnGap)) / 12;
+            const startHeight = card.height();
+            
+            card.addClass('resizing');
             
             // Resize the card on mouse move
             $(document).on('mousemove.resize', function(e) {
-                const width = startWidth + (e.clientX - startX);
-                const columnSpan = Math.max(1, Math.round(width / (cellWidth + gridColumnGap)));
-                card[0].style.gridColumn = `auto / span ${columnSpan}`;
+                const newWidth = startWidth + (e.clientX - startX);
+                const newHeight = startHeight + (e.clientY - startY);
+                
+                // Enforce minimum dimensions
+                const width = Math.max(300, newWidth);
+                const height = Math.max(200, newHeight);
+                
+                // Update card dimensions
+                card.css({
+                    width: width + 'px',
+                    height: height + 'px'
+                });
             });
             
             // Stop resizing on mouse up
             $(document).on('mouseup.resize', function() {
                 $(document).off('mousemove.resize mouseup.resize');
+                card.removeClass('resizing');
                 saveDashboardLayout();
+                
+                // Trigger window resize to update any internal charts
+                $(window).trigger('resize');
             });
         });
     });
@@ -193,8 +212,11 @@ function saveDashboardLayout() {
     document.querySelectorAll('.card').forEach((card, index) => {
         const id = card.id || `card-${index}`;
         layout[id] = {
-            gridColumn: card.style.gridColumn,
-            gridRow: card.style.gridRow
+            width: card.style.width,
+            height: card.style.height,
+            position: card.style.position,
+            top: card.style.top,
+            left: card.style.left
         };
     });
     
@@ -213,8 +235,17 @@ function loadDashboardLayout() {
         document.querySelectorAll('.card').forEach((card, index) => {
             const id = card.id || `card-${index}`;
             if (layout[id]) {
-                card.style.gridColumn = layout[id].gridColumn;
-                card.style.gridRow = layout[id].gridRow;
+                // Apply saved dimensions
+                if (layout[id].width) card.style.width = layout[id].width;
+                if (layout[id].height) card.style.height = layout[id].height;
+                if (layout[id].position) card.style.position = layout[id].position;
+                if (layout[id].top) card.style.top = layout[id].top;
+                if (layout[id].left) card.style.left = layout[id].left;
+                
+                // Add resize handle if it doesn't exist
+                if (card.querySelectorAll('.resize-handle').length === 0) {
+                    card.innerHTML += '<div class="resize-handle"></div>';
+                }
             }
         });
     } catch (e) {
@@ -227,9 +258,14 @@ function loadDashboardLayout() {
  */
 function resetDashboardLayout() {
     document.querySelectorAll('.card').forEach(card => {
-        card.style.gridColumn = '';
-        card.style.gridRow = '';
+        // Clear all custom positioning and dimensions
+        card.style.position = '';
+        card.style.top = '';
+        card.style.left = '';
+        card.style.width = '';
+        card.style.height = '';
     });
     
     localStorage.removeItem('dashboardLayout');
+    console.log('Dashboard layout reset to default');
 }

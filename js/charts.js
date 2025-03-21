@@ -248,25 +248,72 @@ function updateAnalysisCharts() {
         charts.continentalWaves.destroy();
     }
     
-    // Real data for continental waves based on filtered data
-    const data = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [
-            {
-                label: 'Europe',
-                data: [12, 19, 3, 5, 2, 3],
-                borderColor: 'rgba(52, 152, 219, 1)',
-                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                fill: true
-            },
-            {
-                label: 'North America',
-                data: [2, 9, 13, 15, 12, 3],
-                borderColor: 'rgba(46, 204, 113, 1)',
-                backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                fill: true
+    // Process real data for continental waves from the filtered data
+    // Get monthly data for top continents
+    const continentsToShow = ['Europe', 'North America', 'Asia', 'South America'];
+    const continentDataByMonth = {};
+    
+    // Initialize data structure
+    continentsToShow.forEach(continent => {
+        continentDataByMonth[continent] = {};
+    });
+
+    // Process data by month for each continent
+    filteredData.forEach(row => {
+        if (row.continent && continentsToShow.includes(row.continent) && row.new_cases && row.date) {
+            const date = new Date(row.date);
+            const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            
+            if (!continentDataByMonth[row.continent][monthYear]) {
+                continentDataByMonth[row.continent][monthYear] = 0;
             }
-        ]
+            
+            continentDataByMonth[row.continent][monthYear] += row.new_cases || 0;
+        }
+    });
+    
+    // Get all unique months across all continents
+    const allMonths = new Set();
+    Object.values(continentDataByMonth).forEach(continentData => {
+        Object.keys(continentData).forEach(month => allMonths.add(month));
+    });
+    
+    // Sort months chronologically
+    const sortedMonths = Array.from(allMonths).sort();
+    
+    // Format months for display (convert YYYY-MM to Mon YYYY)
+    const monthLabels = sortedMonths.map(monthYear => {
+        const [year, month] = monthYear.split('-');
+        const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    });
+    
+    // Create datasets for each continent
+    const continentDatasets = continentsToShow.map((continent, index) => {
+        const colors = [
+            { border: 'rgba(52, 152, 219, 1)', background: 'rgba(52, 152, 219, 0.1)' },  // blue
+            { border: 'rgba(46, 204, 113, 1)', background: 'rgba(46, 204, 113, 0.1)' },  // green
+            { border: 'rgba(231, 76, 60, 1)', background: 'rgba(231, 76, 60, 0.1)' },    // red
+            { border: 'rgba(241, 196, 15, 1)', background: 'rgba(241, 196, 15, 0.1)' }   // yellow
+        ];
+        
+        // Get data for each month for this continent
+        const monthlyData = sortedMonths.map(month => {
+            return continentDataByMonth[continent][month] || 0;
+        });
+        
+        return {
+            label: continent,
+            data: monthlyData,
+            borderColor: colors[index].border,
+            backgroundColor: colors[index].background,
+            fill: true
+        };
+    });
+    
+    const data = {
+        labels: monthLabels,
+        datasets: continentDatasets
     };
     
     charts.continentalWaves = new Chart(ctx, {
@@ -281,15 +328,39 @@ function updateAnalysisCharts() {
         }
     });
     
-    // Create simple charts for the other analysis sections
-    const demoCharts = [
-        { id: 'temporal-evolution', type: 'line', chartKey: 'temporalEvolution' },
-        { id: 'geographical-comparison', type: 'bar', chartKey: 'geographicalComparison' },
-        { id: 'policy-impact', type: 'line', chartKey: 'policyImpact' },
-        { id: 'contextual-factors', type: 'scatter', chartKey: 'contextualFactors' }
+    // Create analysis charts with real data
+    const analysisCharts = [
+        { 
+            id: 'temporal-evolution', 
+            type: 'line', 
+            chartKey: 'temporalEvolution',
+            title: 'Case Growth Rate Over Time',
+            dataFunction: generateTemporalEvolutionData
+        },
+        { 
+            id: 'geographical-comparison', 
+            type: 'bar', 
+            chartKey: 'geographicalComparison',
+            title: 'Top 10 Countries by Case Fatality Rate',
+            dataFunction: generateGeographicalComparisonData
+        },
+        { 
+            id: 'policy-impact', 
+            type: 'line', 
+            chartKey: 'policyImpact',
+            title: 'Vaccination Impact on Death Rate',
+            dataFunction: generatePolicyImpactData
+        },
+        { 
+            id: 'contextual-factors', 
+            type: 'scatter', 
+            chartKey: 'contextualFactors',
+            title: 'Tests vs. Cases Correlation',
+            dataFunction: generateContextualFactorsData
+        }
     ];
     
-    demoCharts.forEach(chart => {
+    analysisCharts.forEach(chart => {
         const canvas = document.getElementById(chart.id);
         if (canvas) {
             const ctx = canvas.getContext('2d');
@@ -299,19 +370,24 @@ function updateAnalysisCharts() {
                 charts[chart.chartKey].destroy();
             }
             
+            // Generate real data for this analysis chart
+            const chartData = chart.dataFunction(filteredData);
+            
             charts[chart.chartKey] = new Chart(ctx, {
                 type: chart.type,
-                data: {
-                    labels: ['Sample1', 'Sample2', 'Sample3', 'Sample4', 'Sample5'],
-                    datasets: [{
-                        label: 'Demo Data',
-                        data: [12, 19, 3, 5, 2],
-                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
-                        borderColor: 'rgba(52, 152, 219, 1)',
-                        borderWidth: 1
-                    }]
-                },
+                data: chartData,
                 options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: chart.title
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true
@@ -321,4 +397,202 @@ function updateAnalysisCharts() {
             });
         }
     });
+}
+
+// Generate data for temporal evolution chart (case growth rates)
+function generateTemporalEvolutionData(data) {
+    // Get monthly growth rates for global data
+    const monthlyGrowth = {};
+    let previousMonthCases = null;
+    
+    // Group data by month and calculate total cases
+    data.forEach(row => {
+        if (row.date && row.new_cases) {
+            const date = new Date(row.date);
+            const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+            
+            if (!monthlyGrowth[monthYear]) {
+                monthlyGrowth[monthYear] = { totalCases: 0, newCases: 0 };
+            }
+            
+            monthlyGrowth[monthYear].newCases += row.new_cases || 0;
+        }
+    });
+    
+    // Calculate growth rates
+    const sortedMonths = Object.keys(monthlyGrowth).sort();
+    const growthRates = [];
+    const monthLabels = [];
+    
+    sortedMonths.forEach((month, index) => {
+        if (index > 0) {
+            const previousMonth = sortedMonths[index - 1];
+            const currentNewCases = monthlyGrowth[month].newCases;
+            const previousNewCases = monthlyGrowth[previousMonth].newCases;
+            
+            if (previousNewCases > 0) {
+                // Calculate percent change
+                const growthRate = ((currentNewCases - previousNewCases) / previousNewCases) * 100;
+                growthRates.push(parseFloat(growthRate.toFixed(2)));
+                
+                // Format month for display
+                const [year, monthNum] = month.split('-');
+                const date = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+                monthLabels.push(date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+            }
+        }
+    });
+    
+    return {
+        labels: monthLabels,
+        datasets: [{
+            label: 'Monthly Case Growth Rate (%)',
+            data: growthRates,
+            borderColor: 'rgba(52, 152, 219, 1)',
+            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+}
+
+// Generate data for geographical comparison chart
+function generateGeographicalComparisonData(data) {
+    // Calculate CFR for each country
+    const countryCFR = {};
+    
+    // Get latest data for each country
+    const latestCountryData = {};
+    
+    data.forEach(row => {
+        if (row.location && row.total_cases && row.total_deaths) {
+            if (!latestCountryData[row.location] || new Date(row.date) > new Date(latestCountryData[row.location].date)) {
+                latestCountryData[row.location] = row;
+            }
+        }
+    });
+    
+    // Calculate CFR for each country
+    Object.values(latestCountryData).forEach(country => {
+        if (country.total_cases > 10000 && country.total_deaths > 0) { // Minimum threshold for meaningful CFR
+            const cfr = (country.total_deaths / country.total_cases) * 100;
+            countryCFR[country.location] = parseFloat(cfr.toFixed(2));
+        }
+    });
+    
+    // Sort and get top 10 countries by CFR
+    const topCountries = Object.entries(countryCFR)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+    
+    return {
+        labels: topCountries.map(country => country[0]),
+        datasets: [{
+            label: 'Case Fatality Rate (%)',
+            data: topCountries.map(country => country[1]),
+            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+            borderColor: 'rgba(231, 76, 60, 1)',
+            borderWidth: 1
+        }]
+    };
+}
+
+// Generate data for policy impact chart (vaccination impact on death rate)
+function generatePolicyImpactData(data) {
+    // Group countries by vaccination rate and calculate average death rates
+    const vaccinationBins = {
+        'Under 20%': { deaths: 0, cases: 0, countries: 0 },
+        '20-40%': { deaths: 0, cases: 0, countries: 0 },
+        '40-60%': { deaths: 0, cases: 0, countries: 0 },
+        '60-80%': { deaths: 0, cases: 0, countries: 0 },
+        'Over 80%': { deaths: 0, cases: 0, countries: 0 }
+    };
+    
+    // Get latest data for each country
+    const latestCountryData = {};
+    
+    data.forEach(row => {
+        if (row.location && row.people_vaccinated_per_hundred) {
+            if (!latestCountryData[row.location] || new Date(row.date) > new Date(latestCountryData[row.location].date)) {
+                latestCountryData[row.location] = row;
+            }
+        }
+    });
+    
+    // Group countries by vaccination rate
+    Object.values(latestCountryData).forEach(country => {
+        if (country.people_vaccinated_per_hundred && country.total_cases > 10000 && country.total_deaths > 0) {
+            const vacRate = country.people_vaccinated_per_hundred;
+            let bin;
+            
+            if (vacRate < 20) bin = 'Under 20%';
+            else if (vacRate < 40) bin = '20-40%';
+            else if (vacRate < 60) bin = '40-60%';
+            else if (vacRate < 80) bin = '60-80%';
+            else bin = 'Over 80%';
+            
+            vaccinationBins[bin].deaths += country.total_deaths || 0;
+            vaccinationBins[bin].cases += country.total_cases || 0;
+            vaccinationBins[bin].countries++;
+        }
+    });
+    
+    // Calculate CFR for each vaccination bin
+    const labels = Object.keys(vaccinationBins);
+    const cfrByVaccination = labels.map(bin => {
+        const data = vaccinationBins[bin];
+        return data.cases > 0 ? parseFloat(((data.deaths / data.cases) * 100).toFixed(2)) : 0;
+    });
+    
+    return {
+        labels: labels,
+        datasets: [{
+            label: 'Case Fatality Rate by Vaccination Coverage (%)',
+            data: cfrByVaccination,
+            borderColor: 'rgba(46, 204, 113, 1)',
+            backgroundColor: 'rgba(46, 204, 113, 0.2)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+}
+
+// Generate data for contextual factors chart (tests vs. cases correlation)
+function generateContextualFactorsData(data) {
+    // Find countries with both testing and case data
+    const countryData = [];
+    
+    // Get latest data for each country
+    const latestCountryData = {};
+    
+    data.forEach(row => {
+        if (row.location && row.total_tests_per_thousand && row.total_cases_per_million) {
+            if (!latestCountryData[row.location] || new Date(row.date) > new Date(latestCountryData[row.location].date)) {
+                latestCountryData[row.location] = row;
+            }
+        }
+    });
+    
+    // Format data for scatter plot
+    Object.values(latestCountryData).forEach(country => {
+        if (country.total_tests_per_thousand > 0 && country.total_cases_per_million > 0) {
+            countryData.push({
+                x: country.total_tests_per_thousand,
+                y: country.total_cases_per_million,
+                label: country.location
+            });
+        }
+    });
+    
+    return {
+        datasets: [{
+            label: 'Tests vs. Cases by Country',
+            data: countryData,
+            backgroundColor: 'rgba(155, 89, 182, 0.7)',
+            borderColor: 'rgba(155, 89, 182, 1)',
+            borderWidth: 1,
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    };
 }

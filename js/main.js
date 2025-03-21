@@ -66,7 +66,7 @@ function loadData() {
             if (results.data.length > 0) {
                 processData(results.data);
                 // Update all visualizations
-                updateVisualizations();
+                updateDashboard();
             } else {
                 console.error('No data rows found in CSV');
                 alert('Error: No data found in the CSV file.');
