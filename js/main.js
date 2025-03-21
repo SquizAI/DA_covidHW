@@ -58,12 +58,9 @@ function loadData() {
     // we'll use a fetch with text response and then parse it with Papa Parse
     console.log('Loading CSV data...');
     
-    // Use sample data if in development/local environment
-    // For demo purposes, we'll use sample data to avoid CORS issues when viewing locally
-    useSampleData();
+    // IMPORTANT: Using actual CSV data from the repository
+    // This works on GitHub Pages because it's served from same origin
     
-    // This is the original loading code which would work on a server but not locally due to CORS
-    /*
     fetch('owid-covid-data (1).csv')
         .then(response => {
             if (!response.ok) {
@@ -96,7 +93,7 @@ function loadData() {
             document.getElementById('loading-overlay').classList.add('hidden');
             alert('Error loading data. Please try again later.');
         });
-    */
+    
 }
 
 // Function to use sample data for demo purposes
