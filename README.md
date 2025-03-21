@@ -7,16 +7,16 @@
 
 *An interactive data analytics platform tracking the global impact of COVID-19*
 
-![COVID-19 Dashboard Preview](https://i.imgur.com/cOFbYmz.png)
+![COVID-19 Dashboard Preview](./screenshots/dashboard-main.png)
 
 </div>
 
 ## 📊 Dashboard Overview
 
-This interactive dashboard presents comprehensive COVID-19 data analytics using the Our World in Data dataset. Built with modern web technologies, it provides real-time insights into the global pandemic through dynamic visualizations and data analysis tools that help users understand trends, patterns, and the pandemic's impact across different countries and regions.
+This interactive dashboard presents comprehensive COVID-19 data analytics using the Our World in Data dataset. Built with modern web technologies, it provides real-time insights into the global pandemic through dynamic visualizations and data analysis tools. The dashboard helps users understand trends, patterns, and the pandemic's impact across different countries and regions through interactive features and robust data processing.
 
 <div align="center">
-<img src="https://i.imgur.com/NJKL5M7.png" alt="COVID-19 Dashboard Main View" width="800">
+<img src="./screenshots/dashboard-overview.png" alt="COVID-19 Dashboard Main View" width="800">
 </div>
 
 ## ✨ Key Features & Visualizations
@@ -25,25 +25,25 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
   <tr>
     <td width="50%">
       <h3>🌎 Interactive Global Map</h3>
-      <p>Explore a color-coded world map using Leaflet.js that visualizes COVID-19 impact by country. Hover over countries to reveal detailed statistics and click to filter dashboard data for deeper analysis.</p>
-      <img src="https://i.imgur.com/5XfLCeM.png" alt="Global Map View">
+      <p>Explore a color-coded world map using Leaflet.js that visualizes COVID-19 impact by country. The enhanced map includes proper marker sizing, comprehensive country coordinates, and robust error handling for a seamless experience. Hover over countries to reveal detailed statistics.</p>
+      <img src="./screenshots/map-visualization.png" alt="Global Map View">
     </td>
     <td width="50%">
       <h3>📈 Time Series Analysis</h3>
       <p>Track the progression of cases, deaths, and vaccinations over time with interactive line charts that allow for temporal pattern identification and comparison between multiple countries or regions.</p>
-      <img src="https://i.imgur.com/xKQlbdx.png" alt="Time Series Charts">
+      <img src="./screenshots/timeline-chart.png" alt="Time Series Charts">
     </td>
   </tr>
   <tr>
     <td width="50%">
       <h3>🔍 Country Comparison</h3>
       <p>Compare key metrics across selected countries with bar charts and radar plots to identify disparities in pandemic response and impact across different healthcare systems and policy approaches.</p>
-      <img src="https://i.imgur.com/WLX8Hzx.png" alt="Country Comparison Tools">
+      <img src="./screenshots/country-comparison.png" alt="Country Comparison Tools">
     </td>
     <td width="50%">
       <h3>🧩 Customizable Dashboard</h3>
       <p>Drag, resize, and arrange dashboard components in a flexible bento-box layout system that adapts to your analysis needs and screen size, with persistently saved configurations.</p>
-      <img src="https://i.imgur.com/pY4B8dK.png" alt="Customizable Dashboard Layout">
+      <img src="./screenshots/about.png" alt="Customizable Dashboard Layout">
     </td>
   </tr>
 </table>
@@ -57,7 +57,7 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
         <li>Vaccination Progress (Donut Chart)</li>
         <li>Country Comparison (Horizontal Bar Chart)</li>
       </ul>
-      <img src="https://i.imgur.com/ZxsRMUW.png" alt="Interactive Charts">
+      <img src="./screenshots/cases-by-continent.png" alt="Interactive Charts">
     </td>
   </tr>
   <tr>
@@ -71,7 +71,7 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
         <li>View Type (Total, Per Million, Per Capita)</li>
       </ul>
       <p>All visualizations update in real-time based on selected filters.</p>
-      <img src="https://i.imgur.com/y2jH5Dk.png" alt="Filtering Options">
+      <img src="./screenshots/summary-stats.png" alt="Filtering Options">
     </td>
     <td>
       <h3>🔄 Country Comparison Tool</h3>
@@ -83,7 +83,7 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
         <li>Testing Rates</li>
       </ul>
       <p>Compare statistics side-by-side with global averages.</p>
-      <img src="https://i.imgur.com/8Ynj5hs.png" alt="Country Comparison">
+      <img src="./screenshots/vaccination-progress.png" alt="Country Comparison">
     </td>
   </tr>
   <tr>
@@ -129,7 +129,7 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
 <table>
   <tr>
     <td width="30%" align="center">
-      <img src="https://i.imgur.com/r7nzpZR.png" width="80" height="80" alt="Data Processing">
+      <img src="./screenshots/testing-data.png" width="80" height="80" alt="Data Processing">
       <h4>Data Processing</h4>
     </td>
     <td width="70%">
@@ -142,7 +142,7 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
   </tr>
   <tr>
     <td align="center">
-      <img src="https://i.imgur.com/wKOutpX.png" width="80" height="80" alt="Visualization">
+      <img src="./screenshots/continental-patterns.png" width="80" height="80" alt="Visualization">
       <h4>Visualization</h4>
     </td>
     <td>
@@ -155,7 +155,7 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
   </tr>
   <tr>
     <td align="center">
-      <img src="https://i.imgur.com/LTHYZDW.png" width="80" height="80" alt="User Interface">
+      <img src="./screenshots/temporal-evolution.png" width="80" height="80" alt="User Interface">
       <h4>User Interface</h4>
     </td>
     <td>
@@ -171,7 +171,36 @@ This interactive dashboard presents comprehensive COVID-19 data analytics using 
 ### 🔍 Application Architecture
 
 <div align="center">
-  <img src="https://i.imgur.com/DXG5Fqg.png" alt="Application Architecture" width="800">
+
+```mermaid
+flowchart TD
+    A[Data Loading] --> B[Data Processing]
+    B --> C{Update Dashboard}
+    C --> D[Update Map]
+    C --> E[Update Summary Stats]
+    C --> F[Update Charts]
+    
+    F --> G[Cases by Continent]
+    F --> H[Timeline Charts]
+    F --> I[Vaccination Progress]
+    F --> J[Country Comparison]
+    
+    K[User Interactions] --> L{Filter Selection}
+    L --> M[Country Filter]
+    L --> N[Date Range Filter]
+    L --> O[Data Type Filter]
+    M & N & O --> B
+    
+    style A fill:#f9d5e5,stroke:#333,stroke-width:2px
+    style B fill:#eeeeee,stroke:#333,stroke-width:2px
+    style C fill:#b5ead7,stroke:#333,stroke-width:2px
+    style D fill:#c7ceea,stroke:#333,stroke-width:2px
+    style E fill:#c7ceea,stroke:#333,stroke-width:2px
+    style F fill:#c7ceea,stroke:#333,stroke-width:2px
+    style K fill:#ffdac1,stroke:#333,stroke-width:2px
+    style L fill:#e2f0cb,stroke:#333,stroke-width:2px
+```
+
 </div>
 
 The architecture diagram illustrates how data flows through the application, from loading CSV data to updating various visualizations. User interactions (applying filters or selecting countries) trigger updates throughout the dashboard components via the central data processing pipeline.
