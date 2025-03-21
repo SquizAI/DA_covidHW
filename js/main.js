@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load and process data
 function loadData() {
     // Show loading indicator
-    document.body.classList.add('loading');
+    document.getElementById('loading-overlay').classList.remove('hidden');
     
     // Use Papa Parse to load and parse the CSV file
     Papa.parse('owid-covid-data (1).csv', {
@@ -62,11 +62,13 @@ function loadData() {
         skipEmptyLines: true,
         complete: function(results) {
             processData(results.data);
-            document.body.classList.remove('loading');
+            // Hide loading indicator
+            document.getElementById('loading-overlay').classList.add('hidden');
         },
         error: function(error) {
             console.error('Error loading data:', error);
-            document.body.classList.remove('loading');
+            // Hide loading indicator even on error
+            document.getElementById('loading-overlay').classList.add('hidden');
             alert('Error loading data. Please try again later.');
         }
     });

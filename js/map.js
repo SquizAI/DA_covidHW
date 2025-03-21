@@ -15,7 +15,19 @@ function initLeafletMap() {
     const mapContainer = document.getElementById('map-chart');
     if (!mapContainer) return;
     
+    // Check if map is already initialized to prevent duplicate initialization
+    if (mapInitialized && covidMap) {
+        console.log('Map already initialized, skipping initialization');
+        return;
+    }
+    
     try {
+        // Clean up any existing map instance
+        if (covidMap) {
+            covidMap.remove();
+            covidMap = null;
+        }
+        
         // Set the map container height
         mapContainer.style.height = '400px';
         
@@ -26,7 +38,7 @@ function initLeafletMap() {
             return;
         }
         
-        // Initialize the map centered at [0, 0] with zoom level 2
+        // Initialize the map centered at [20, 0] with zoom level 2
         covidMap = L.map('map-chart').setView([20, 0], 2);
         
         // Add the base tile layer (OpenStreetMap)
@@ -85,113 +97,135 @@ function provideFallbackMapView() {
 
 // Update the Global Map View
 function updateMapView() {
-    // Skip if map functionality is not available
-    if (!mapFunctionalityAvailable) {
-        return; // Fallback view is already shown
+    // Skip if map isn't initialized yet
+    if (!mapInitialized || !covidMap) {
+        // Try to initialize map again
+        if (typeof L !== 'undefined' && !mapInitialized) {
+            initLeafletMap();
+        } else {
+            provideFallbackMapView();
+        }
+        return;
     }
+    
+    // Clear existing markers but keep the base map
+    covidMap.eachLayer(function(layer) {
+        if (layer._url === undefined) { // Not the tile layer
+            covidMap.removeLayer(layer);
+        }
+    });
+    
     // Get the latest data for each country
     const countryData = {};
     
     filteredData.forEach(row => {
-        if (row.iso_code && row.location && row.total_cases) {
-            // Convert ISO code to the format used by jVectorMap (lowercase)
-            const iso = row.iso_code.toLowerCase();
-            
+        if (row.location && row.total_cases) {
             // Only update if we don't have data for this country yet or if this data is newer
-            if (!countryData[iso] || new Date(row.date) > new Date(countryData[iso].date)) {
-                countryData[iso] = row;
+            if (!countryData[row.location] || new Date(row.date) > new Date(countryData[row.location].date)) {
+                countryData[row.location] = row;
             }
         }
     });
     
-    // Prepare the data for the map
-    const mapData = {};
+    // Country coordinates (sample - for major countries)
+    const coordinates = {
+        "United States": [37.0902, -95.7129],
+        "China": [35.8617, 104.1954],
+        "India": [20.5937, 78.9629],
+        "Brazil": [-14.2350, -51.9253],
+        "Russia": [61.5240, 105.3188],
+        "United Kingdom": [55.3781, -3.4360],
+        "France": [46.2276, 2.2137],
+        "Italy": [41.8719, 12.5674],
+        "Germany": [51.1657, 10.4515],
+        "Japan": [36.2048, 138.2529],
+        "South Korea": [35.9078, 127.7669],
+        "Spain": [40.4637, -3.7492],
+        "Mexico": [23.6345, -102.5528],
+        "Indonesia": [-0.7893, 113.9213],
+        "Canada": [56.1304, -106.3468],
+        "Australia": [-25.2744, 133.7751],
+        "South Africa": [-30.5595, 22.9375],
+        "Turkey": [38.9637, 35.2433],
+        "Argentina": [-38.4161, -63.6167],
+        "Saudi Arabia": [23.8859, 45.0792]
+    };
     
-    // Format data for the map
-    Object.entries(countryData).forEach(([iso, row]) => {
-        // Skip entries without total_cases data
-        if (!row.total_cases) return;
+    // Add markers for countries with data
+    Object.values(countryData).forEach(country => {
+        // Skip if no coordinates or no cases
+        if (!coordinates[country.location] || !country.total_cases) return;
         
-        // Add to map data
-        mapData[iso] = row.total_cases;
-    });
-    
-    // Initialize or update the map
-    const mapChart = document.getElementById('map-chart');
-    if (!mapChart) return;
-    
-    // Make sure the element is empty
-    $(mapChart).empty();
-    $(mapChart).css('height', '400px');
-    
-    // Create the map using jQuery
-    try {
-        $(mapChart).vectorMap({
-        map: 'world_mill',
-        backgroundColor: 'transparent',
-        zoomOnScroll: true,
-        series: {
-            regions: [{
-                values: mapData,
-                scale: ['#C8EEFF', '#0071A4'],
-                normalizeFunction: 'polynomial',
-                legend: {
-                    horizontal: true,
-                    title: 'Total COVID-19 Cases'
-                }
-            }]
-        },
-        onRegionTipShow: function(e, el, code) {
-            if (countryData[code]) {
-                const country = countryData[code];
-                const casesFormatted = new Intl.NumberFormat().format(country.total_cases || 0);
-                const deathsFormatted = new Intl.NumberFormat().format(country.total_deaths || 0);
-                const vaccinationsFormatted = new Intl.NumberFormat().format(country.total_vaccinations || 0);
-                const cfrPercentage = country.total_cases > 0 ? ((country.total_deaths / country.total_cases) * 100).toFixed(2) : 'N/A';
-                
-                el.html(
-                    '<div class="map-tooltip">' +
-                    '<strong>' + country.location + '</strong><br>' +
-                    'Total Cases: ' + casesFormatted + '<br>' +
-                    'Total Deaths: ' + deathsFormatted + '<br>' +
-                    'Case Fatality Rate: ' + cfrPercentage + '%<br>' +
-                    'Total Vaccinations: ' + vaccinationsFormatted +
-                    '</div>'
-                );
-            }
-        }
-    });
-    
-    } catch (error) {
-        console.error('Error initializing map:', error);
-        return;
-    }
-    
-    // Add map controls if they don't exist
-    if ($('.map-controls').length === 0) {
-        $('#map-chart').after(
-            '<div class="map-controls">' +
-            '<button id="map-zoom-in" class="btn-icon"><i class="fas fa-plus"></i></button>' +
-            '<button id="map-zoom-out" class="btn-icon"><i class="fas fa-minus"></i></button>' +
-            '<button id="map-reset" class="btn-icon"><i class="fas fa-sync-alt"></i></button>' +
-            '</div>'
+        const [lat, lng] = coordinates[country.location];
+        
+        // Calculate circle size based on cases (logarithmic scale)
+        const casesLog = Math.log(country.total_cases) / Math.log(10);
+        const radius = Math.max(5, Math.min(20, casesLog * 3));
+        
+        // Calculate fatality rate for color
+        const fatalityRate = country.total_deaths && country.total_cases ? 
+            (country.total_deaths / country.total_cases) * 100 : 0;
+            
+        // Color scale from green to red based on fatality rate
+        const color = fatalityRate > 5 ? '#e74c3c' : // Very high (>5%)
+                     fatalityRate > 3 ? '#e67e22' : // High (3-5%)
+                     fatalityRate > 1 ? '#f1c40f' : // Medium (1-3%)
+                     '#2ecc71'; // Low (<1%)
+        
+        // Create circle marker
+        const marker = L.circleMarker([lat, lng], {
+            radius: radius,
+            fillColor: color,
+            color: '#fff',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(covidMap);
+        
+        // Format numbers
+        const casesFormatted = new Intl.NumberFormat().format(country.total_cases || 0);
+        const deathsFormatted = new Intl.NumberFormat().format(country.total_deaths || 0);
+        const vaccinationsFormatted = new Intl.NumberFormat().format(country.people_vaccinated || 0);
+        
+        // Add popup with country data
+        marker.bindPopup(
+            `<div class="map-tooltip">
+                <h4>${country.location}</h4>
+                <div><b>Total Cases:</b> ${casesFormatted}</div>
+                <div><b>Total Deaths:</b> ${deathsFormatted}</div>
+                <div><b>Case Fatality Rate:</b> ${fatalityRate.toFixed(2)}%</div>
+                ${country.people_vaccinated ? `<div><b>Vaccinated:</b> ${vaccinationsFormatted}</div>` : ''}
+            </div>`,
+            { className: 'covid-popup' }
         );
-        
-        // Add event listeners to the map controls
-        $('#map-zoom-in').on('click', function() {
-            const map = $('#map-chart').vectorMap('get', 'mapObject');
-            map.setScale(map.scale * 1.5, map.width / 2, map.height / 2, false);
-        });
-        
-        $('#map-zoom-out').on('click', function() {
-            const map = $('#map-chart').vectorMap('get', 'mapObject');
-            map.setScale(map.scale / 1.5, map.width / 2, map.height / 2, false);
-        });
-        
-        $('#map-reset').on('click', function() {
-            const map = $('#map-chart').vectorMap('get', 'mapObject');
-            map.setScale(1, 0, 0, false);
-            map.setFocus({scale: 1, x: 0.5, y: 0.5});
-        });
-    }
+    });
+    
+    // Add a legend to the map
+    const legend = L.control({position: 'bottomright'});
+    
+    legend.onAdd = function() {
+        const div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML = `
+            <div class="map-legend">
+                <h4>Case Fatality Rate</h4>
+                <div><span style="background-color: #e74c3c"></span> &gt;5%</div>
+                <div><span style="background-color: #e67e22"></span> 3-5%</div>
+                <div><span style="background-color: #f1c40f"></span> 1-3%</div>
+                <div><span style="background-color: #2ecc71"></span> &lt;1%</div>
+                <p>Circle size represents total cases</p>
+            </div>
+        `;
+        return div;
+    };
+    
+    // Remove any existing legends
+    document.querySelectorAll('.legend').forEach(el => el.remove());
+    
+    // Add the legend to the map
+    legend.addTo(covidMap);
+}
+
+// Helper function to format numbers
+function formatNumber(number) {
+    return new Intl.NumberFormat().format(number);
 }

@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-choropleth@1.1.4/dist/choropleth.js"></script>
+    
+    <!-- jQuery UI for draggable functionality -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -80,7 +84,7 @@
                 </div>
                 
                 <div class="dashboard-grid">
-                    <div class="card summary-stats enhanced">
+                    <div class="card summary-stats enhanced" id="global-summary">
                         <h3>Global Summary <button id="summary-filter-toggle" class="btn-icon" title="Toggle Filters"><i class="fas fa-filter"></i></button></h3>
                         
                         <div id="summary-filters" class="card-filters">
@@ -141,35 +145,35 @@
                         </div>
                     </div>
                     
-                    <div class="card">
+                    <div class="card continent-chart" id="continent-cases">
                         <h3>Cases by Continent</h3>
                         <div class="chart-container">
                             <canvas id="cases-by-continent"></canvas>
                         </div>
                     </div>
                     
-                    <div class="card">
+                    <div class="card timeline-chart" id="global-timeline">
                         <h3>Global Cases Timeline</h3>
                         <div class="chart-container">
                             <canvas id="cases-timeline"></canvas>
                         </div>
                     </div>
                     
-                    <div class="card">
+                    <div class="card" id="vaccination-data">
                         <h3>Vaccination Progress</h3>
                         <div class="chart-container">
                             <canvas id="vaccination-progress"></canvas>
                         </div>
                     </div>
                     
-                    <div class="card wide">
+                    <div class="card country-comparison" id="country-compare">
                         <h3>Country Comparison</h3>
                         <div class="chart-container">
                             <canvas id="country-comparison"></canvas>
                         </div>
                     </div>
                     
-                    <div class="card">
+                    <div class="card country-selector" id="country-select-card">
                         <h3>Country Selector</h3>
                         <div class="selector-container">
                             <select id="country-select" class="filter-select">
@@ -214,9 +218,9 @@
                         </div>
                     </div>
                     
-                    <div class="card wide">
+                    <div class="card map-container" id="global-map-card">
                         <h3>Global Map View</h3>
-                        <div class="chart-container map-container">
+                        <div class="chart-container">
                             <div id="map-chart"></div>
                         </div>
                     </div>
@@ -534,6 +538,7 @@
     <script src="js/charts.js"></script>
     <script src="js/map.js"></script>
     <script src="js/country-comparison.js"></script>
+    <script src="js/dashboard-layout.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
