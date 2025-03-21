@@ -317,6 +317,51 @@ main {
     grid-row: span 2;
 }
 
+#map-chart {
+    height: 400px !important;
+    width: 100% !important;
+    z-index: 1;
+}
+
+/* Map Legend Styles */
+.map-legend, .legend {
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    line-height: 1.5;
+}
+
+.map-legend h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+}
+
+.legend-item, .legend div {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.color-box, .legend span {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    margin-right: 8px;
+    border-radius: 3px;
+}
+
+.legend-note {
+    font-style: italic;
+    font-size: 11px;
+    margin-top: 8px;
+}
+
+.covid-popup {
+    max-width: 250px;
+}
+
 .country-comparison {
     grid-column: span 4;
     grid-row: span 1;
@@ -329,8 +374,12 @@ main {
 
 /* Make cards draggable */
 .card {
-    cursor: move;
+    cursor: default;
     transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card h3 {
+    cursor: move; /* Only make header draggable */
 }
 
 .card:hover {

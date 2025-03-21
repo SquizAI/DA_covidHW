@@ -55,13 +55,22 @@ function loadData() {
     document.getElementById('loading-overlay').classList.remove('hidden');
     
     // Use Papa Parse to load and parse the CSV file
+    console.log('Loading CSV data...');
     Papa.parse('owid-covid-data (1).csv', {
         download: true,
         header: true,
         dynamicTyping: true,
         skipEmptyLines: true,
         complete: function(results) {
-            processData(results.data);
+            console.log('CSV data loaded successfully with ' + results.data.length + ' rows');
+            if (results.data.length > 0) {
+                processData(results.data);
+                // Update all visualizations
+                updateVisualizations();
+            } else {
+                console.error('No data rows found in CSV');
+                alert('Error: No data found in the CSV file.');
+            }
             // Hide loading indicator
             document.getElementById('loading-overlay').classList.add('hidden');
         },
@@ -76,6 +85,7 @@ function loadData() {
 
 // Process the loaded data
 function processData(data) {
+    console.log('Data loaded successfully, processing...');
     // Store the data globally
     covidData = data;
     

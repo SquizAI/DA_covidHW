@@ -3,8 +3,10 @@
  * Implements draggable and resizable card functionality for a bento box layout
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDraggableCards();
+// Initialize dashboard layout when document is ready
+$(document).ready(function() {
+    console.log('Document ready, initializing draggable cards...');
+    setTimeout(initializeDraggableCards, 1000); // Delay initialization to ensure map and other components are loaded
 });
 
 /**
@@ -12,11 +14,20 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initializeDraggableCards() {
     // Check if the required libraries are loaded
-    if (typeof $ === 'undefined' || typeof $.ui === 'undefined') {
+    if (typeof $ === 'undefined') {
+        console.error('jQuery is not available!');
+        implementSimpleDraggable();
+        return;
+    }
+    
+    // Check if jQuery UI is loaded
+    if (!$.fn.draggable || !$.ui) {
         console.warn('jQuery UI is required for draggable cards. Loading a simplified version.');
         implementSimpleDraggable();
         return;
     }
+    
+    console.log('jQuery and jQuery UI are available, initializing draggable functionality');
 
     // Make cards draggable using jQuery UI
     $('.card').draggable({

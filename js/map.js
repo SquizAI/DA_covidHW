@@ -6,8 +6,9 @@ let mapInitialized = false;
 
 // Initialize map when document is ready
 $(document).ready(function() {
+    console.log('Map initialization scheduled');
     // Wait for DOM to be fully loaded
-    setTimeout(initLeafletMap, 500);
+    setTimeout(initLeafletMap, 1000);
 });
 
 // Initialize the Leaflet map
@@ -41,8 +42,8 @@ function initLeafletMap() {
         // Initialize the map centered at [20, 0] with zoom level 2
         covidMap = L.map('map-chart').setView([20, 0], 2);
         
-        // Add the base tile layer (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Add the base tile layer (CartoDB - more visually appealing)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 18
         }).addTo(covidMap);
@@ -97,11 +98,15 @@ function provideFallbackMapView() {
 
 // Update the Global Map View
 function updateMapView() {
+    console.log('Updating map view with COVID data...');
     // Skip if map isn't initialized yet
     if (!mapInitialized || !covidMap) {
+        console.warn('Map not initialized yet, attempting to initialize...');
         // Try to initialize map again
         if (typeof L !== 'undefined' && !mapInitialized) {
             initLeafletMap();
+            // Try again after a short delay
+            setTimeout(updateMapView, 1000);
         } else {
             provideFallbackMapView();
         }
@@ -194,6 +199,7 @@ function updateMapView() {
                 <div><b>Total Cases:</b> ${casesFormatted}</div>
                 <div><b>Total Deaths:</b> ${deathsFormatted}</div>
                 <div><b>Case Fatality Rate:</b> ${fatalityRate.toFixed(2)}%</div>
+                <div><b>Vaccinations:</b> ${vaccinationsFormatted || 'No data'}</div>
                 ${country.people_vaccinated ? `<div><b>Vaccinated:</b> ${vaccinationsFormatted}</div>` : ''}
             </div>`,
             { className: 'covid-popup' }
